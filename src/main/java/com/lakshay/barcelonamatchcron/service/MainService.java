@@ -27,6 +27,7 @@ public class MainService {
 
     @Scheduled(cron = "0 0 */2 * * ?")
     public void runTask() {
+        log.info("Cron ran.");
         Connection.Response response = utilities.manageConnection("https://www.footballorgin.com/?s=barcelona");
         if (response == null) {
             return;
