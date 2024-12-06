@@ -2,7 +2,7 @@ name: Deploy to AWS Lambda
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main ]  # or your default branch name
 
 permissions:
   id-token: write
@@ -18,7 +18,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::322958063959:role/github-actions-lambda-role
-          aws-region: us-east-1
+          aws-region: ap-south-1
           
       - name: Set up JDK 17
         uses: actions/setup-java@v3
