@@ -99,6 +99,7 @@ public class MainService {
     }
 
     private boolean isRelevantMatch(PostData postData, Team team) {
+        log.info(postData.title());
         return postData.title().toLowerCase().contains(team.getMatchInTitle().toLowerCase());
     }
 
