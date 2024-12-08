@@ -73,6 +73,7 @@ public class MainService {
         if (response == null) {
             return;
         }
+        log.info(response.toString());
         getMatchPosts(response)
                 .stream()
                 .map(this::extractPostData)
