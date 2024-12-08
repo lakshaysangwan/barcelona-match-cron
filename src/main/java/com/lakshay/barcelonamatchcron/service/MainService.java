@@ -73,7 +73,6 @@ public class MainService {
         if (response == null) {
             return;
         }
-        log.info(Jsoup.parse(response.body()));
         getMatchPosts(response)
                 .stream()
                 .map(this::extractPostData)
@@ -96,13 +95,10 @@ public class MainService {
         Element anchor = post.getElementsByClass("entry-header").get(0).getElementsByTag("h2").get(0);
         String title = anchor.text();
         String url = anchor.getElementsByTag("a").get(0).attr("href");
-        log.info(title);
-        log.info(url);
         return new PostData(title, url);
     }
 
     private boolean isRelevantMatch(PostData postData, Team team) {
-        log.info(postData.title());
         return postData.title().toLowerCase().contains(team.getMatchInTitle().toLowerCase());
     }
 
