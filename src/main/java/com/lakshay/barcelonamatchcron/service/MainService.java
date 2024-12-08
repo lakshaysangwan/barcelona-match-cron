@@ -56,6 +56,7 @@ public class MainService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void processTeamMatches(Team team) {
+        log.info("Cron started for team {}", team.getMatchInTitle());
         try {
             processTeamMatchesInternal(team);
             entityManager.flush();
@@ -64,6 +65,7 @@ public class MainService {
             log.error("Error processing matches for team: {}", team.getMatchInTitle(), e);
             throw e;
         }
+        log.info("Cron ended for team {}", team.getMatchInTitle());
     }
 
     private void processTeamMatchesInternal(Team team) {
