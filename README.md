@@ -1,75 +1,124 @@
-# FC Barcelona Match Notification Service
+# Barcelona Match Notification System
 
-## Overview
+An automated system that checks for new Barcelona football match replays and sends email notifications to subscribed
+users.
 
-This project runs a cron job every 2 hours to scrape information about the latest FC Barcelona football matches. It
-uses [Jsoup](https://jsoup.org/) to scrape the match data and MongoDB to keep track of email notifications. When a new
-match is found, an email notification is sent, and a record is added to MongoDB. The project is deployed on Railway.app.
+## Features
 
-## Future Scope
+- Automated hourly checks for new Barcelona match replays
+- Email notifications when new matches are available
+- Prevents duplicate notifications using database tracking
+- Configurable for different football teams
+- Runs serverless on AWS Lambda
 
-- Better formatted emails
+## Technical Architecture
 
-## Prerequisites
+### AWS Services Used
 
-- Java
-- MongoDB
-- Gmail Account
-- Maven (For Dependency Management)
+- **AWS Lambda**: Hosts the main application
+- **Amazon EventBridge**: Triggers the Lambda function hourly
+- **AWS Budget**: Monitors costs and sends alerts if spending occurs
 
-## Technologies Used
+### Database
 
-- Java
-- Jsoup for Web Scraping
-- MongoDB as Database
-- Railway.app for Deployment
-- Gmail for Sending Emails
+- **Supabase PostgreSQL**: Stores processed match records
+- Uses connection pooling for optimal performance
 
-## Setup & Installation
+### Email Service
 
-### MongoDB
+- Gmail SMTP for sending notifications
+- Configurable email templates
 
-Make sure you have MongoDB running and accessible.
+## Configuration
 
-### Gmail Setup
+### Lambda Configuration
 
-1. Log in to your Gmail account and go to [Manage your Google Account](https://myaccount.google.com/).
-2. Navigate to Security -> App Passwords.
-3. Generate a new App Password specifically for this project.
+- Memory: 512MB
+- Timeout: 5 minutes
+- Runtime: Java 11
+- Handler: `com.lakshay.barcelonamatchcron.LambdaHandler`
 
-### Clone Repository
+### EventBridge Schedule
+
+- Runs hourly
+- Timezone: Asia/Kolkata
+- Rule Name: barcelona-match-cron-hourly
+
+### Resource Usage (Monthly Estimates)
+
+- Lambda Invocations: 720 (well within free tier)
+- Compute Time: ~19,000 GB-seconds (within 400,000 GB-seconds free tier)
+- EventBridge Events: 720 (within 1M free tier)
+
+## Environment Variables Required
+
+- `SUPABASE_PASSWORD`: Database password
+- `SENDING_EMAIL_ADDRESS`: Gmail address for sending notifications
+- `SENDING_EMAIL_APP_PASSWORD`: Gmail app-specific password
+
+## Development
+
+### Prerequisites
+
+- Java 11 or higher
+- Maven
+- AWS CLI configured with appropriate permissions
+
+### Local Testing
 
 ```bash
-git clone https://github.com/lakshaysangwan/barcelona-match-cron.git
+# Run the main application locally
+mvn spring-boot:run
+
+# Run tests
+mvn test
 ```
-
-### Configuration
-
-Replace placeholders in the `application.properties` file with your MongoDB and Gmail credentials.
 
 ### Deployment
 
-The project is deployed on Railway.app, follow their [docs](https://docs.railway.app/) for deployment instructions.
+The application is deployed on AWS Lambda and can be updated using:
 
-## Running on IDE
+```bash
+mvn clean package
+# Upload the generated JAR to AWS Lambda
+```
 
-### IntelliJ IDEA
+## Monitoring
 
-1. Open the project folder in IntelliJ IDEA.
-2. Right-click on the `pom.xml` file and select `Reload Project`.
-3. Navigate to the `BarcelonaMatchCronApplication` class, right-click and
-   select `Run 'BarcelonaMatchCronApplication.main()'`.
+### AWS Budget Alerts
 
-### Eclipse
+- Configured to alert on any spending above $0
+- Email notifications enabled for budget alerts
 
-1. Open Eclipse and go to `File -> Import -> Existing Maven Projects`.
-2. Navigate to the project folder and click `Finish`.
-3. Right-click on the project in the Project Explorer, go to `Run As -> Java Application`.
+### Lambda Monitoring
 
-## Cron Job
+- CloudWatch metrics available for:
+    - Execution duration
+    - Memory usage
+    - Error rates
+    - Invocation counts
 
-The cron job is configured to run every 2 hours and checks for the latest FC Barcelona matches available on first page.
+## Database Schema
+
+### mail_record Table
+
+- `id`: Long (Primary Key)
+- `title`: String (Match title)
+- `url`: String (Match replay URL)
+- `created_date`: Timestamp
+- `updated_date`: Timestamp
+
+## Future Improvements
+
+- Add support for more teams
+- Implement match quality filtering
+- Add match highlights detection
+- Enhance email template customization
 
 ## Contributing
 
-If you want to contribute, feel free to create a Pull Request.
+Feel free to submit issues and enhancement requests!
+
+## License
+
+[Add your license here]
