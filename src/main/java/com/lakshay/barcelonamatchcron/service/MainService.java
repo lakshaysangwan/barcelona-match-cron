@@ -70,11 +70,9 @@ public class MainService {
 
     private void processTeamMatchesInternal(Team team) {
         Connection.Response response = getResponse(team);
-        log.info(response);
         if (response == null) {
             return;
         }
-
         getMatchPosts(response)
                 .stream()
                 .map(this::extractPostData)
@@ -89,6 +87,7 @@ public class MainService {
     }
 
     private Elements getMatchPosts(Connection.Response response) {
+        log.info("post on page : {}", Jsoup.parse(response.body()).getElementsByTag("article").size());
         return Jsoup.parse(response.body()).getElementsByTag("article");
     }
 
@@ -96,6 +95,8 @@ public class MainService {
         Element anchor = post.getElementsByClass("entry-header").get(0).getElementsByTag("h2").get(0);
         String title = anchor.text();
         String url = anchor.getElementsByTag("a").get(0).attr("href");
+        log.info(title);
+        log.info(url);
         return new PostData(title, url);
     }
 
