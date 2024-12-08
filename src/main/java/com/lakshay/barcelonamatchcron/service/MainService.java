@@ -4,47 +4,57 @@ import com.lakshay.barcelonamatchcron.entity.MailRecord;
 import com.lakshay.barcelonamatchcron.enums.Team;
 import com.lakshay.barcelonamatchcron.repository.MailRecordRepository;
 import com.lakshay.barcelonamatchcron.utilities.Utilities;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.extern.log4j.Log4j2;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-
 @Log4j2
 @Component
 public class MainService {
-    private final MailRecordRepository repository;
+    private final MailRecordRepository repositoryFactory;
     private final Utilities utilities;
     private final EmailService emailService;
+    @PersistenceContext
+    private EntityManager entityManager;
 
-    @Autowired
-    public MainService(MailRecordRepository repository, Utilities utilities, EmailService emailService) {
-        this.repository = repository;
+    public MainService(MailRecordRepository repositoryFactory, Utilities utilities, EmailService emailService) {
+        this.repositoryFactory = repositoryFactory;
         this.utilities = utilities;
         this.emailService = emailService;
     }
 
+    private MailRecordRepository getRepository() {
+        entityManager.clear();
+        return repositoryFactory;
+    }
+
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void runTask() {
-        Arrays.stream(Team.values())
-                .forEach(this::processTeamMatches);
+        entityManager.clear();
+        for (Team team : Team.values()) {
+            try {
+                processTeamMatches(team);
+                Thread.sleep(1000); // Small delay between teams
+            } catch (Exception e) {
+                log.error("Error in task for team: {}", team.getMatchInTitle(), e);
+            }
+        }
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void processTeamMatches(Team team) {
-        log.info("Cron ran for {}", team.getMatchInTitle());
         try {
             processTeamMatchesInternal(team);
         } catch (Exception e) {
             log.error("Error processing matches for team: {}", team.getMatchInTitle(), e);
         }
-        log.info("Cron ended for {}", team.getMatchInTitle());
     }
 
     private void processTeamMatchesInternal(Team team) {
@@ -82,7 +92,12 @@ public class MainService {
     }
 
     private boolean isExistingRecord(String title) {
-        return repository.existsByExactTitle(title);
+        try {
+            return getRepository().existsByExactTitle(title);
+        } catch (Exception e) {
+            log.error("Error checking record existence: {}", e.getMessage());
+            return false;
+        }
     }
 
     private void processNewMatch(PostData postData, Team team) {
@@ -97,11 +112,18 @@ public class MainService {
     }
 
     private void saveRecord(PostData postData) {
-        MailRecord newRecord = MailRecord.builder()
-                .title(postData.title())
-                .url(postData.url())
-                .build();
-        repository.save(newRecord);
+        try {
+            MailRecord newRecord = MailRecord.builder()
+                    .title(postData.title())
+                    .url(postData.url())
+                    .build();
+            getRepository().save(newRecord);
+            entityManager.flush();
+            log.info("Successfully saved record with title: {}", postData.title());
+        } catch (Exception e) {
+            log.error("Error saving record: {}", e.getMessage());
+            throw e;
+        }
     }
 }
 
