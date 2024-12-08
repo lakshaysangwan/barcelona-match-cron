@@ -70,6 +70,7 @@ public class MainService {
 
     private void processTeamMatchesInternal(Team team) {
         Connection.Response response = getResponse(team);
+        log.info(response);
         if (response == null) {
             return;
         }
