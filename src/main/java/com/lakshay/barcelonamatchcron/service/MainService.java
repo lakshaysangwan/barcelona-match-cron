@@ -73,7 +73,7 @@ public class MainService {
         if (response == null) {
             return;
         }
-        log.info(response.toString());
+        log.info(Jsoup.parse(response.body()));
         getMatchPosts(response)
                 .stream()
                 .map(this::extractPostData)
