@@ -7,15 +7,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
 public class LambdaHandler implements RequestHandler<Object, String> {
-    private static ConfigurableApplicationContext applicationContext;
-
     @Override
     public String handleRequest(Object input, Context context) {
-        if (applicationContext == null) {
-            applicationContext = SpringApplication.run(BarcelonaMatchCronApplication.class);
-        }
-
-        try {
+        try (ConfigurableApplicationContext applicationContext = SpringApplication.run(BarcelonaMatchCronApplication.class)) {
             MainService mainService = applicationContext.getBean(MainService.class);
             mainService.runTask();
             return "Task executed successfully";

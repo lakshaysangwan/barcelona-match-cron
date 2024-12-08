@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Log4j2
 @Component
+@Transactional(readOnly = true)
 public class MainService {
     private final MailRecordRepository repositoryFactory;
     private final Utilities utilities;
@@ -38,10 +39,15 @@ public class MainService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void runTask() {
         entityManager.clear();
+        entityManager.flush();
+
         for (Team team : Team.values()) {
             try {
                 processTeamMatches(team);
-                Thread.sleep(1000); // Small delay between teams
+                // Close and reopen transaction between teams
+                entityManager.flush();
+                entityManager.clear();
+                Thread.sleep(1000);
             } catch (Exception e) {
                 log.error("Error in task for team: {}", team.getMatchInTitle(), e);
             }
@@ -52,8 +58,11 @@ public class MainService {
     public void processTeamMatches(Team team) {
         try {
             processTeamMatchesInternal(team);
+            entityManager.flush();
+            entityManager.clear();
         } catch (Exception e) {
             log.error("Error processing matches for team: {}", team.getMatchInTitle(), e);
+            throw e;
         }
     }
 
