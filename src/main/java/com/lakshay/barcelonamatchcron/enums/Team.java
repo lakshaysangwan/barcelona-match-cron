@@ -14,13 +14,13 @@ public enum Team {
             return Emails.getBarcelonaEmails();
         }
     },
-    MANCHESTER_UNITED("manchester+united", "Manchester United") {
+    MANCHESTER_UNITED("manchester%2Bunited", "Manchester United") {
         @Override
         public List<String> getEmails() {
             return Emails.getManUnitedEmails();
         }
     },
-    MANCHESTER_CITY("manchester+city", "Manchester City") {
+    MANCHESTER_CITY("manchester%2Bcity", "Manchester City") {
         @Override
         public List<String> getEmails() {
             return Emails.getManCityEmails();
