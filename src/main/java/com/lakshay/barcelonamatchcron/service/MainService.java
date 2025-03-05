@@ -113,7 +113,7 @@ public class MainService {
 
     private void processNewMatch(PostData postData, Team team) {
         try {
-            if (emailService.sendMail(postData.title(), postData.url(), team.getEmails(), team.getMatchInTitle())) {
+            if (emailService.sendMail(postData.url(), team.getEmails(), team.getMatchInTitle())) {
                 log.info("{} match found and mail sent: {}", team.getMatchInTitle(), postData.title());
                 saveRecord(postData);
             }
